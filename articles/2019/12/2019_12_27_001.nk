@@ -1,0 +1,31 @@
+==TITLE_START==
+ブログツール "nikki.pl" を作った
+==TITLE_END==
+
+==SUMMARY_START==
+Perl5.8以上であればコアモジュール以外のモジュールに一切依存しない、簡素なブログツールを作った。
+==SUMMARY_END==
+
+==TAG_START==
+perl ブログツール プログラミング
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 ブログツール nikki.pl
+
+長らくRijiを使っているが、ちょっとリスペクトして似たような機能を持ったブログツールをやっつけで書いてみた。
+
+目指したのはコアモジュール以外のモジュールに依存しないこと。
+
+markdownからhtmlに変換する処理を実装するのは面倒くさそうだったので、
+超簡単なマークアップﾗﾝｷﾞｯｼﾞ（ほとんど置換するだけ）にした。拡張子は.nk。
+
+よろしければ使ってみてください。
+
+==a nikki.pl github ==href https://github.com/adokoy001/nikki a==
+
+エンジョイ！！
