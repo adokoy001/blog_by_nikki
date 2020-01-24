@@ -1,0 +1,47 @@
+==TITLE_START==
+FuelPHPでCSRF対策
+==TITLE_END==
+
+==SUMMARY_START==
+FuelPHPでCSRF対策する際のメモ
+==SUMMARY_END==
+
+==TAG_START==
+FuelPHP fuelphp PHP php CSRF csrf セキュリティ プログラミング
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 FuelPHPでCSRF対策
+
+ウェブアプリケーションフレームワークFuelPHPにはSecurityパッケージにCSRF対策用の便利なツールが入っているので、
+特にこだわりがなければ以下の点に注意して使っておくと良い。
+
+==ul
+==li 副作用のある操作でCSRF対策を施す
+==li フォームへの埋め込みだけ施してpost先での検証を忘れないように注意(ありがち)
+==li ログアウト処理には使わなくても害は無い
+==li Configで十分に長く複雑なsaltを設定する
+ul==
+
+==h2 FuelでのCSRF対策機能の仕組み
+
+Fuelのソースを確認した限りでは、以下のような仕組みのようだ。
+
+==ul
+==li fetch_tokenでCookieにcsrfのtokenの大元を生成＆クライアント側にset
+==li 大元のtokenはFuelサーバー内セッションストレージに保存される訳ではない
+==li フォーム用としてsaltを付けてハッシュ化された値を生成、それをformのhiddenにセットすることを想定
+==li クライアントがpostすると、hiddenのtokenの値と最初に生成した大元のtokenをrequest headerに含めて送信
+==li Fuelサーバーはhiddenのtokenと、cookieで送信されたcsrfの大元の値にsalt付きハッシュを通した値を比較
+==li 一致していればクライアントからの正当なリクエストと判定
+==li saltはサーバー側でしか保持しないため、改ざんやリバース生成は事実上不可能
+==li 大元token生成アルゴリズム(generate_tokenファンクション)に一部mt_randが使われているが、time(),uniqid(),salt,sha512を併用しているため実質的に安全であるものと思われる。
+==li saltはクライアントごとに固有の値を持たせるのではなく、Fuelサーバーで共有されたものを一つだけ持つ
+ul==
+
+fetch_tokenの計算コストは無視でき、また、サーバー側ではhash前のtokenを保持しないのでかなり低コストである。
+
