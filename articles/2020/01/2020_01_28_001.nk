@@ -1,0 +1,141 @@
+==TITLE_START==
+PerlのOpenSSLモジュールで電子署名
+==TITLE_END==
+
+==SUMMARY_START==
+Crypt::OpenSSL::RSAを使って電子署名するサンプルプログラム
+==SUMMARY_END==
+
+==TAG_START==
+Perl perl プログラミング 電子署名
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 PerlのOpenSSLモジュールで電子署名
+
+Perlでは ==code Crypt::OpenSSL::RSA code== モジュールを使えば簡単に電子署名を楽しむことができるので、その紹介。
+
+==h2 電子署名と改ざん検知
+
+知らない人向けに雑に説明しますと、「電子署名」とは
+「このドキュメントは間違いなく、私以外誰も知らない秘密鍵をもっているこの私めがお墨付きを与えました」ということを明確に証明するための電子的な手段で、
+公開鍵暗号のRSAによる署名と検証が有名です。
+（決して「このドキュメントは間違いなく私が作成しました」ということを証明するわけではないことにご注意ください）
+
+RSAによる「署名」は、具体的には「秘密鍵を使ってドキュメントのダイジェスト値に対して暗号化したもの」にあたり、
+その署名を公開鍵で復号すると元のドキュメントと一致するかどうかを見れば「検証」が可能という感じです。
+この検証作業によって署名の正当性と改ざんの検知が可能になります。
+
+==h2 privateキーとpublicキーの生成
+
+以下、4096ビット長の鍵生成サンプルプログラムです。
+
+==precode
+
+use strict;
+use warnings;
+use utf8;
+use Data::Dumper;
+
+use Crypt::CBC;
+use Crypt::OpenSSL::RSA;
+
+my $rsa = Crypt::OpenSSL::RSA->generate_key(4096);
+
+my $pvt = $rsa->get_private_key_string();
+my $pub = $rsa->get_public_key_string();
+
+open(my $fh, '>', 'pvt.pem');
+print $fh $pvt;
+close($fh);
+
+open($fh, '>', 'pub.pem');
+print $fh $pub;
+close($fh);
+
+precode==
+
+上記を実行するとカレントディレクトリに秘密鍵pvt.pemと公開鍵pub.pemが作成されます。
+
+==h2 署名
+
+以下のプログラムは、先ほど作成したpvt.pemを使ってin.txtというファイルの署名を作成し、out.signに出力（つまり署名）します。
+
+==precode
+
+use strict;
+use warnings;
+use utf8;
+use Crypt::CBC;
+use Crypt::OpenSSL::RSA;
+
+my $pvt_text = '';
+open(my $fh, '<', 'pvt.pem');
+while(<$fh>){$pvt_text .= $_}
+close($fh);
+my $rsa_priv = Crypt::OpenSSL::RSA->new_private_key($pvt_text);
+
+my $input = $ARGV[0] // 'in.txt';
+my $output = $ARGV[1] // 'out.sign';
+
+my $content = '';
+open($fh, '<', $input);
+while(<$fh>){$content .= $_}
+close($fh);
+
+my $sign = $rsa_priv->sign($content);
+
+open($fh, '>', $output);
+print $fh $sign;
+close($fh);
+
+precode==
+
+==h2 検証
+
+上記プログラムで作成されたout.signに対して検証してみます。
+
+秘密鍵pvt.pemとin.txtとout.signの三つが必要になります。
+
+==precode
+
+use strict;
+use warnings;
+use utf8;
+use Crypt::CBC;
+use Crypt::OpenSSL::RSA;
+
+my $pub_text = '';
+open(my $fh, '<', 'pub.pem');
+while(<$fh>){$pub_text .= $_}
+close($fh);
+my $rsa = Crypt::OpenSSL::RSA->new_public_key($pub_text);
+
+my $input = $ARGV[0] // 'in.txt';
+my $signature = $ARGV[1] // 'out.sign';
+
+my $content = '';
+open($fh, '<', $input);
+while(<$fh>){$content .= $_}
+close($fh);
+
+my $sign = '';
+open($fh, '<', $signature);
+while(<$fh>){$sign .= $_}
+close($fh);
+
+
+
+if($rsa->verify($content, $sign)){
+  print "valid\n";
+}
+
+precode==
+
+==code verify(元のドキュメント,署名) code== によって検証し、正当なものであれば1が返るようになっています。
+
+
