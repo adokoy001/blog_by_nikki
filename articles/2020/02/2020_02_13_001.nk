@@ -1,0 +1,184 @@
+==TITLE_START==
+PayPalのAPI
+==TITLE_END==
+
+==SUMMARY_START==
+仕事でPayPalのSDKを使ってAPIを組み込んだこととか
+==SUMMARY_END==
+
+==TAG_START==
+プログラミング PayPal PHP php paypal API SDK api sdk
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 PayPalのAPI
+
+仕事でPayPalのSDKを使ってAPIをPHP製プロダクトに組み込んでみた。
+
+ドキュメントが英語のものしか用意されていないのでかなり苦労した。
+というか、ドキュメントの通りに作っても微妙にJSのコードが狂っていたりするのでかなりの罠。
+
+==h2 Clientサイドプログラム
+
+Client, Server, PayPalプラットフォームの処理フローは公式が作成している図の通りだが、
+最低限必要なものを実装するコードを以下に示しておく。
+ネットで日本語の情報を調べたところ古いAPIの使い方しか出てこないので、現行API（2020/02/13現在）の日本語情報としては有用かと思われる。
+
+==precode
+        <script
+            src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID_HERE&currency=JPY&debug=true">
+        </script>
+        <div id="paypal-button-container"></div>
+        <script>
+            paypal.Buttons({
+
+                createOrder: function () {
+                    // fetchのpathは実装するサーバサイドプログラムを指定
+                    return fetch('/your/server_side/api/path.php', {
+                        method: 'post',
+                        headers: {
+                            'content-type': 'application/json'
+                        }
+                    }).then(function (res) {
+                        return res.json();
+                    }).then(function (data) {
+                        // ここ要注意。現時点では必要なorderIDはreturnされた結果を data.id とすることで取得できる。
+                        // ここでreturnされるべきはAPIドキュメントでいうところのOrderID
+                        return data.id;
+                    });
+                },
+
+                onApprove: function (data) {
+                    // こちらも実装予定のサーバサイドプログラムのpathを指定
+                    return fetch('/your/server_side/capture/api.php', {
+                        method: 'post',
+                        headers: {
+                            'content-type': 'application/json'
+                        },
+                        // bodyの内容はidだけで良いが、受け取ったデータをそのまま流してもちゃんと動作する。
+                        body: JSON.stringify(data)
+                    }).then(function (res) {
+                        return res.json();
+                    }).then(function (details) {
+                        // 決済に成功した後にどうするかを記述。
+                        // ここではalertで内容を出力しているだけだが、実稼働時はページ遷移などの処理を入れることになると思います。
+                        alert(JSON.stringify(details));
+                    });
+                }
+            }).render('#paypal-button-container');
+        </script>
+precode==
+
+scriptをsrcでロードするときにcurrency=JPYというパラメタを与えてあげると日本円が扱えるようになる仕様。
+これもわかりにくい。
+
+==h2 サーバサイドの実装
+
+先ほどの ==code /your/server_side/api/path.php code== と、
+==code /your/server_side/capture/api.php code== の具体的なPHP実装を例示します。
+
+composerでpaypalのsdkをインストールしたという前提です。
+
+==precode
+
+use PayPalCheckoutSdk\Core\PayPalHttpClient;
+use PayPalCheckoutSdk\Core\SandboxEnvironment;
+use PayPalCheckoutSdk\Orders\OrdersGetRequest;
+
+class MyApp_Util_PayPal {
+
+    /**
+     * Set up and return PayPal PHP SDK environment with PayPal access credentials.
+     * This sample uses SandboxEnvironment. In production, use LiveEnvironment.
+     */
+    public static function environment() {
+        $credential = self::get_credential();
+        $clientId = $credential['client_id'];
+        $clientSecret = $credential['secret'];
+        return new \PayPalCheckoutSdk\Core\SandboxEnvironment($clientId, $clientSecret);
+    }
+
+    public static function get_credential() {
+        // 実際にはDBに接続して復号して値を入れたりすることになる場合が多いでしょう。
+        $data = [
+            'client_id' => 'YOUR_CLIENT_ID',
+            'secret' => 'YOUR_SECRET',
+        ];
+        return $data;
+    }
+
+    public static function client() {
+        // sandbox環境です。プロダクションにするときはuse側とともにliveへ書き換えましょう。
+        return new \PayPalCheckoutSdk\Core\PayPalHttpClient(self::environment());
+    }
+
+    public static function get_order($transaction_id = null) {
+        // Order作成処理: 以下の例示のような形で料金と明細を作成していく。
+        $data = Something_Loader::something_load($transaction_id);
+        $parchase_units = [];
+        foreach ($general as $key => $item) {
+            $tmp_data = [
+                'reference_id' => $transaction_id,
+                'description' => 'something description',
+                'type' => 'SERVICE',
+                'category' => 'LODGING_AND_ACCOMMODATIONS',
+                'amount' => [
+                    'currency_code' => 'JPY',
+                    'value' => round($item['total_price']),
+                ],
+                'breakdown' => [
+                    'item_total' => [
+                        'currency_code' => 'JPY',
+                        'value' => round($item['total_price']),
+                    ],
+                    'tax_total' => [
+                        'currency_code' => 'JPY',
+                        'value' => round($item['total_consumption_tax']),
+                    ],
+                ],
+            ];
+            $parchase_units[$key] = $tmp_data;
+        }
+        $request = new PayPalCheckoutSdk\Orders\OrdersCreateRequest();
+        $request->prefer('return=representation');
+        $request->body = [
+            'intent' => 'CAPTURE',
+            'application_context' => [
+                'return_url' => 'https://yoursite.example.com/example_return',
+                'cancel_url' => 'https://yoursite.example.com/example_cancel',
+            ],
+            'purchase_units' => $parchase_units
+        ];
+        $client = self::client();
+        $response = $client->execute($request);
+        // この例ではレスポンスをそのまま返しています。
+        return $response;
+    }
+
+    public static function capture_order($order_id) {
+        // onApproveで決済の結果を検証してその後の処理を記述する。
+        $request = new PayPalCheckoutSdk\Orders\OrdersCaptureRequest($order_id);
+        $client = self::client();
+        $response = $client->execute($request);
+        // 以下、検証結果を読み込んで何らかの処理を記述する。
+        $status_code = $response->statusCode;
+        $result = $response->result;
+        $id = $result->id;
+        Something_Process::something_process($status_code,$result,$id);
+        return $response;
+    }
+
+}
+
+precode==
+
+てな感じです。
+
+これを書いている時点では新しいAPIに関する日本語のドキュメントが無いっぽいので、
+何らかの参考になれば幸いです。
+
+
