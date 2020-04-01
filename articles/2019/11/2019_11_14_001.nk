@@ -7,7 +7,7 @@ InnoDBはHashインデックスを張ることができない
 ==SUMMARY_END==
 
 ==TAG_START==
-tags: MySQL インデックス InnoDB
+MySQL インデックス InnoDB
 ==TAG_END==
 
 ==HEAD_START==

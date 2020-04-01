@@ -26,9 +26,9 @@ sub archive_generator(){
   }
   my $archive_list = "";
   foreach my $year (sort {$b <=> $a} keys %$year_month){
-      $archive_list .= "<p> $year </p>\n";
+      $archive_list .= "<h2> $year </h2>\n";
       foreach my $month ( sort {$b <=> $a} keys %{$year_month->{$year}} ){
-	  $archive_list .= "<ul> $year/$month \n";
+	  $archive_list .= "<ul> <b>$year/$month</b>\n";
 	  foreach my $entry (@{$year_month->{$year}->{$month}}){
 	      my ($date) = (split('/',$entry->{www_path}))[4];
 	      my ($yyyy,$mm,$dd) = (split('_',$date))[0,1,2];
