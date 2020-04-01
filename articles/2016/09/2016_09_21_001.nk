@@ -1,0 +1,47 @@
+==TITLE_START==
+Perlで集合を扱う
+==TITLE_END==
+
+==SUMMARY_START==
+Perlで集合を扱う方法について説明。集合の対称差についても。
+==SUMMARY_END==
+
+==TAG_START==
+Perl 集合 数学
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 Perlで集合を扱う
+
+Perlで集合を扱うなら，CPANモジュールのSet::Objectが良さそう．ちなみに「集合を扱う」というのは，和集合，共通部分，差集合，対称差，真部分集合の判定ぐらいの感覚で．
+
+車輪の再発明的なものはdankogaiさんのブログに解説付きで既にあった．
+
+==a perl - 配列の∪と∩ ==href http://blog.livedoor.jp/dankogai/archives/51441112.html a==
+
+ 
+
+==a perl - にも集合オブジェクトと演算を ==href http://blog.livedoor.jp/dankogai/archives/51442760.html a==
+
+ 
+
+割りと簡単に作れるので，CPANモジュールインストールどころかpackageを作るまでも無いだろうということで，
+Gistにサブルーチンのセットをメモ代わりに書いてみた．
+
+==link https://gist.github.com/adokoy001/7890136538e3c979e339d0f1b890eab3 link==
+
+ 
+
+「ハッシュのkeyを取るだけでいいじゃん」っていう箇所があるので後々修正しようかな・・・．
+
+地味に和集合,共通部分,対称差については3つ以上の集合にも対応しておいた（絶妙にそういう機能が必要になることもあるので）
+
+対称差については，「その要素を含む集合の数が奇数であれば，対称差の集合に入る」ようになっているので
+直感的に「おや？」と思うかもしれないが，3入力以上のXORと同じ振る舞いだと考えれば違和感は無くなるかも．
+
+
+

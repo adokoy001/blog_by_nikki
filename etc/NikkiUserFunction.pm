@@ -15,12 +15,28 @@ sub entry_filter(){
 sub archive_generator(){
   ## this will work on _=_USER_DEFINED_ARCHIVE_=_ label.
   my $archive = shift;
-  my $archive_list = "";
-  $archive_list .= "<ul>\n";
+  my $year_month;
   foreach my $entry (@$archive){
-    $archive_list .= "  <li> $entry->{created_at} : <a href=\"$entry->{www_path}\"> $entry->{title} </a> - $entry->{summary} </li>\n";
+      my ($year,$month) = (split('/',$entry->{www_path}))[2,3];
+      if(defined($year_month->{$year}) and defined($year_month->{$year}->{$month})){
+	  push(@{$year_month->{$year}->{$month}},$entry);
+      }else{
+	  $year_month->{$year}->{$month} = [$entry];
+      }
   }
-  $archive_list .= "</ul>\n";
+  my $archive_list = "";
+  foreach my $year (sort {$b <=> $a} keys %$year_month){
+      $archive_list .= "<p> $year </p>\n";
+      foreach my $month ( sort {$b <=> $a} keys %{$year_month->{$year}} ){
+	  $archive_list .= "<ul> $year/$month \n";
+	  foreach my $entry (@{$year_month->{$year}->{$month}}){
+	      my ($date) = (split('/',$entry->{www_path}))[4];
+	      my ($yyyy,$mm,$dd) = (split('_',$date))[0,1,2];
+	      $archive_list .= "  <li> $yyyy-$mm-$dd : <a href=\"$entry->{www_path}\"> $entry->{title} </a> - $entry->{summary} </li>\n";
+	  }
+	  $archive_list .= "</ul>\n";
+      }
+  }
   return $archive_list;
 }
 
