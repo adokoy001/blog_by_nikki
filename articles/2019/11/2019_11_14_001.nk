@@ -1,0 +1,23 @@
+==TITLE_START==
+InnoDBはHashインデックスを張ることができない
+==TITLE_END==
+
+==SUMMARY_START==
+勘違いしていた話。
+==SUMMARY_END==
+
+==TAG_START==
+tags: MySQL インデックス InnoDB
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 InnoDBはHashインデックスを張ることができない
+
+表題の通り。勘違いしてた。
+
+Index作成時にHASHを指定できるが、実際に作成されるのはBTREEインデックスになるとのこと。
+で、ややこしいのがInnoDBは適応的ハッシュインデックスという機能を持っており、稼働状況から自動的に必要なハッシュインデックスが構築され、それが利用されるとのことでした。

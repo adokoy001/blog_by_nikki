@@ -1,0 +1,72 @@
+==TITLE_START==
+簡易認証基盤的なものを作った
+==TITLE_END==
+
+==SUMMARY_START==
+簡易認証基盤的なものを作った話。
+==SUMMARY_END==
+
+==TAG_START==
+Perl perl プログラミング
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 簡易認証基盤的なものを作った
+
+久々にMojoliciousでperl製アプリを作ってみた。やっぱりperlは良い。
+
+
+==link https://api.yokoda.okinawa link==
+
+ 
+
+Registerでメールアドレスを登録したらアクティベーションコードが送られて来るので、Activateでコードを入力してください。
+それが済んだらOTPやTemp Authが使えるようになります。
+
+==h2 ブロックチェーン的な変な機能
+
+元々はOTPとか簡易ユーザー認証基盤をJSON形式のAPIで提供するだけのアプリを作る予定だったが、hash値の連鎖で何か面白いことができないかと試行錯誤しているうちに出来上がったものが非対話式ゼロ知識証明っぽくなった。
+
+（Hash chainと書いていますが実際にはhash chainではないです。）
+
+一応、「パスワード等の秘密を一切明かさずに何らかの所有権や権限を主張する」ことを目的とした機能になっている。
+
+==h3 Create Root Hash Chain で認証の基点を作成
+
+Create Root Hash Chain で認証の基点を作成する。
+
+messageには何を入れてもいいが、想定している内容としては「XX株式会社 本部」「ヤマダタロウ ROOT認証局」等である。
+next secret keyは、このメッセージにAdd hash chain（後述）でデータをつなげるために必要なパスワードとなる。
+
+submitすると（またはクライアントを書いてpost）、JSON形式でtransaction_idとsecret_verify_idが返される。
+secret_verify_keyは、このtransaction_idのデータを作成したのは自分であることを証明するために必要な秘密の鍵であり、
+この時にしか表示されない（システム上でも保存されない）。
+
+返されたtransaction_idと、設定したnext secret keyの情報を「権限を与えたい人物」に与える。
+
+
+==h3 Add Hash Chain でメッセージを繋げる
+
+対象のtransaction_idにメッセージを繋げることができる。
+その際には該当transaction_idを作成したときに設定したnext secret keyを入力する必要がある。
+つまり、next secret keyを知っている者だけがこのtransaction_idにメッセージを繋げることができるようになっているので
+「このtransaction_idを作った者から権限を与えられている（パスワードを知らされている）」ことを示すことができる。
+
+Create Root Hash Chainと同様、書き込みに成功するとtransaction_idとsecret_verify_keyが返る。
+
+もちろん、このままでは「該当transaction_idのnext secret keyを知っている者から書き込みがあった」ということしか言えず、
+誰が書き込んだのかは証明できない。
+
+==h3 Create evidence hash chain
+
+
+「このtransaction_idを自分が作成したということをパブリックに証明したい」場合に使う。
+
+Root hash chainの作成またはhash chainの追加時に返されたtransaction_idとsecret_verify_keyを入力すると、
+誰もが閲覧可能な検証ページのリンクが返る。このリンクは何度でも再作成することができ、古いものは自動的に削除される。
+
+そのため、このリンクを証明したい相手に示すことで「自分が作成した」ということを高確率で証明できる。

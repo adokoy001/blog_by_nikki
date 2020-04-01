@@ -1,0 +1,103 @@
+==TITLE_START==
+MySQL
+==TITLE_END==
+
+==SUMMARY_START==
+PostgreSQL使いからMySQL使いになる話（違）
+==SUMMARY_END==
+
+==TAG_START==
+データベース SQL MySQL
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 MySQL
+
+以前の職場ではPostgreSQLを使っていたが、今の職場ではMySQLを使っている。
+一応、今進めているプロジェクトでどんなDBMSを使うかは一任されていたが、会社としてメインで使っているのがMySQLだったので選択。
+
+以下、気が付いたことを記す。
+
+==h2 MySQLには、FULL OUTER JOINが無い
+
+これはちょっと驚いた。というか、SQL標準とは一体・・・。
+
+一応、LEFT OUTER JOIN を2回（または読みやすくLEFT,RIGHT一回ずつ等）とUNIONで実現できる。
+
+==precode
+    SELECT lf1,rf2 FROM lt LEFT OUTER JOIN rt ON lt.lf1 = rt.rf1
+
+    UNION
+
+    SELECT lf1,rf2 FROM lt RIGHT OUTER JOIN rt ON lt.lf1 = rt.rf1
+precode==
+
+==h2 MySQLの結合アルゴリズムはNested Loop（と、その派生アルゴリズム）のみ
+
+数百万レコードを対象にして複数のフィールドでGROUP BYすると厳しい。
+この点、PostgreSQLはメモリを犠牲にしてHASH JOINしてくれるのでありがたいですね（場合によってはNested Loopの数百倍以上高速）
+
+==h2 MySQLにはgenerate_series的なものが無い
+
+一応、ユーザー変数を使ってそれっぽいことはできる。
+が、生成したいレコード数分が存在しているテーブル（仮想テーブルでもOK）を利用する必要があるので、
+information_schemaを使うかunionとcross joinで仮想テーブルを爆発させるかしなければならない。
+
+歯抜けデータ補完で適用されることが多いのは日付関連だとは思うが、いっそのこと実テーブルを作っておくべきではある。
+
+以下に、私がお勧めするカレンダーテーブル作成文を記す。
+
+==precode
+    CREATE TABLE date_calendar( date date );
+
+
+    INSERT INTO date_calendar(date)
+
+    SELECT
+      @date:='1500-01-01' as date
+    UNION ALL
+    SELECT
+      @date:=DATE_ADD(@date, INTERVAL 1 DAY)
+    FROM
+      (
+    (
+      (SELECT 1 AS f1,1) UNION (SELECT 2,2) UNION (SELECT 3,3) UNION (SELECT 4,4) UNION (SELECT 5,5) UNION
+      (SELECT 6,6) UNION (SELECT 7,7) UNION (SELECT 8,8) UNION (SELECT 9,9) UNION (SELECT 10,10)
+    ) AS cj1
+      CROSS JOIN
+    (
+      (SELECT 1 AS f1,1) UNION (SELECT 2,2) UNION (SELECT 3,3) UNION (SELECT 4,4) UNION (SELECT 5,5) UNION
+      (SELECT 6,6) UNION (SELECT 7,7) UNION (SELECT 8,8) UNION (SELECT 9,9) UNION (SELECT 10,10)
+    ) AS cj2
+      CROSS JOIN
+    (
+      (SELECT 1 AS f1,1) UNION (SELECT 2,2) UNION (SELECT 3,3) UNION (SELECT 4,4) UNION (SELECT 5,5) UNION
+      (SELECT 6,6) UNION (SELECT 7,7) UNION (SELECT 8,8) UNION (SELECT 9,9) UNION (SELECT 10,10)
+    ) AS cj3
+      CROSS JOIN
+    (
+      (SELECT 1 AS f1,1) UNION (SELECT 2,2) UNION (SELECT 3,3) UNION (SELECT 4,4) UNION (SELECT 5,5) UNION
+      (SELECT 6,6) UNION (SELECT 7,7) UNION (SELECT 8,8) UNION (SELECT 9,9) UNION (SELECT 10,10)
+    ) AS cj4
+      CROSS JOIN
+    (
+      (SELECT 1 AS f1,1) UNION (SELECT 2,2) UNION (SELECT 3,3) UNION (SELECT 4,4) UNION (SELECT 5,5) UNION
+      (SELECT 6,6) UNION (SELECT 7,7) UNION (SELECT 8,8) UNION (SELECT 9,9) UNION (SELECT 10,10)
+    ) AS cj5
+      CROSS JOIN
+    (
+      (SELECT 1 AS f1,1) UNION (SELECT 2,2) UNION (SELECT 3,3) UNION (SELECT 4,4) UNION (SELECT 5,5) UNION
+      (SELECT 6,6) UNION (SELECT 7,7) UNION (SELECT 8,8) UNION (SELECT 9,9) UNION (SELECT 10,10)
+    ) AS cj6
+      )
+    WHERE
+      @date < '2500-01-01';
+
+precode==
+
+とりあえずこれだけの範囲をカバーしていれば問題ないだろうし、
+レコード数も数十万程度（＝数十万日）なのでパフォーマンス上も大した問題にならないだろう。

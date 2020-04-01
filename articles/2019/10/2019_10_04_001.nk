@@ -1,0 +1,83 @@
+==TITLE_START==
+PerlとPHP
+==TITLE_END==
+
+==SUMMARY_START==
+PerlとPHPの比較など
+==SUMMARY_END==
+
+==TAG_START==
+php perl PHP Perl プログラミング
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 PerlとPHP
+
+
+Perlに対する「古くてきたない」「書いた人にしか読めない」「現代的ではない」という旨の批判をみかける。
+
+個人的には同意なのだが、仕事でPHPを書くようになってからは「少なくともPerlは、PHPよりもモダンで安全な書き方もできるようになっている」と考えるようになった。
+
+==h2 strictプラグマとレキシカルスコープ
+
+PHPは未宣言の変数を参照してもNOTICEレベルのエラーとなり、「NOTICEレベルのエラーが発生したら停止」するように書いていない限り、そのまま処理が続行される。
+Perlのstrictプラグマのように、未宣言の変数を参照した場合にプログラムが停止するのをデフォルトの動作とする手段が用意されていない。
+（仕事で使っているWAFでは、NOTICEエラーでもプログラムが停止するようになっている）
+
+また、PHPはforやifブロック内だけで宣言した変数を、その外のブロックから参照できてしまう（以下に例を示す）
+
+==precode
+<?php
+$arr = [1,2,3,4,5];
+$sum = 0;
+foreach($arr as $value){
+    $tmp_sum = $sum + $value * 2;
+    $sum = $tmp_sum;
+}
+print($tmp_sum);    # <- 読めてしまう！
+?>
+
+precode==
+
+この振る舞いを強制的にエラーにする方法は無い（たぶん）
+
+一方、Perlではuse strictしてレキシカルスコープで変数を宣言していれば防げる。
+
+==precode
+use strict;
+use warnings;
+my $arr = [1,2,3,4,5];
+my $sum = 0;
+foreach my $value (@$arr){
+    my $tmp_sum = $sum + $value * 2;
+    $sum = $tmp_sum;
+}
+print($tmp_sum);
+
+precode==
+
+==h2 プロダクションレディなPHP製HTTPサーバーが無い
+
+PerlだとStarmanとかいろいろある（Mojoliciousのhypnotoadもそう）のだが、プロダクションで使えるようなPHP製HTTPサーバーが見当たらない。
+ただし、uWSGIにphpのプラグインがあるようなので、（ちょっとした技術力さえあれば）どうにでもなるだろう。
+
+ちなみに開発で使うようなビルトインHTTPサーバーはあって、以下のコマンドで実行できる。
+
+==precode
+ $ php -S localhost:8080
+precode==
+
+
+==h2 phpenv（またはphpenv的なもの）の使い道
+
+いや、これは前述のuWSGIを使えばいい話ではあるんだが、
+apache or nginx + php-fpm or mod_php or FastCGIが一般的な現在（2019年10月）で、
+phpenvの使い勝手の悪さは正直キツイ。
+
+phpの本体そのもののバージョン切り替えはキツイとして、PerlでいうCarton的な機能はcomposerというものが用意してくれている。
+設定方法、使い方もだいたい同じ。
+

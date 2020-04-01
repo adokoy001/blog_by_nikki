@@ -1,0 +1,37 @@
+==TITLE_START==
+家族でSlackとか
+==TITLE_END==
+
+==SUMMARY_START==
+家族でSlackを活用してみようとした話と、チャットボットプログラムを作ってみた話。
+==SUMMARY_END==
+
+==TAG_START==
+日常 家族 プログラミング
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 家族でSlackとか
+
+妻と連絡を取ることが主な目的だが、家族だけで使うSlackチームを作ってやっていっている。
+
+Googleスプレッドシートと連携して、ネットで拾ったスクリプトを入れてリマインダの通知が来るようにもしている。
+燃えないゴミの収集日とか、その日の朝にメンション付きで自動投稿させるようにしているので、それなりの実用性がある感じ。
+Googleスプレッドシートで家計簿とか書いてもらってそれを家族で共有もしている。これもそこそこ便利。
+
+最近、趣味でチャットボットの枠組みというかサンプルコード的なものをGitHubにアップした。
+READMEとか適当なので、完成度が上がったら適当に書いてみるかな。
+
+ 
+==link https://github.com/adokoy001/MyChatBot link==
+
+ 
+
+MyChat.pmとMyScenario.pmとchatbot_plack.plの中でuseしているcpanモジュールをインストールしておいて、
+plackup chatbot_plack.pl とコマンドを打てばそれらしいチャットボットのwebアプリが5000番ポートで立ち上がる。
+
+何かに使えるかなぁ。

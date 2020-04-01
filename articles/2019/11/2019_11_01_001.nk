@@ -1,0 +1,69 @@
+==TITLE_START==
+Chatbotのプログラム
+==TITLE_END==
+
+==SUMMARY_START==
+以前作ったチャットボットをマルチプロセス対応。ただし、実用的ではない。
+==SUMMARY_END==
+
+==TAG_START==
+perl chatbot チャットボット プログラミング
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 Chatbotのプログラム
+
+ずいぶん前に書いたChatbotのプログラムをマルチプロセスに対応させた。
+
+==link https://github.com/adokoy001/MyChatBot link==
+
+ 
+
+チャットボットフレームワークとして作っていますが、
+あくまでも簡易的・学習用としてのものなのでデータの永続化やスケール性等は全く考慮されていません。
+チャットボットのフレームワークとしては無限の拡張性と自由度がありますが、
+プロダクションでは全く使い物にならないと思います。
+
+==h2 Storableでプロセス間オブジェクト共有
+
+Starman等のマルチプロセスhttpサーバーで起動してもちゃんと動くように、
+Storableを使って内部で使っている変数のプロセス間共有を実現させた。
+
+Storableは変数だけではなくオブジェクトやコードリファレンスもプロセス間共有させることができるのでかなり面白い。
+その際はStorable::Deparse（B::Deparseのミラクルパワーを使うことを許可）と
+Storable::Evalのグローバル変数を1にセットすることを忘れずに。
+
+==precode
+     （略)
+    use Storable qw(lock_nstore lock_retrieve);
+    $Storable::Deparse = 1;
+    $Storable::Eval = 1;
+
+     (中略)
+
+    ## webアプリスタートアップ処理
+    my $my_object = MyOriginalObject->new();
+
+    # objectをファイルにsaveして別プロセスと共有
+    lock_nstore $my_object, './filename_for_saved_object';
+
+     (中略)
+
+    ## webアプリのリクエスト処理内部
+
+    # 共有されているobjectを読み込み
+    $my_object = lock_retrieve './filename_for_saved_object';
+
+     (何らかの処理)
+
+    # objectの内容をsave
+    lock_nstore $my_object, './filename_for_saved_object';
+
+precode==
+
+httpサーバーの実行ループ中の読み込みから書き込みまではアトミックに処理しなければならないため、
+読み込み時からadvisory lockを獲得するようにしている。

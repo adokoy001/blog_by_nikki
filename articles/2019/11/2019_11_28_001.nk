@@ -1,0 +1,52 @@
+==TITLE_START==
+MySQL（InnoDB）のロックとトランザクション
+==TITLE_END==
+
+==SUMMARY_START==
+MySQLのロックとトランザクションについて、PostgreSQLとの違いなど。
+==SUMMARY_END==
+
+==TAG_START==
+MySQL PostgreSQL mysql postgresql DB RDB データベース
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 MySQL（InnoDB）のロックとトランザクション
+
+元PostgreSQLユーザー故、MySQLのトランザクションとテーブルロック獲得処理を逆に取り違えて致命的なミスをしてしまうところだった。
+
+以下のようなPostgreSQLの（他セッションからの読み取りを含む）排他ロックが要求されるトランザクション処理があると仮定する。
+
+==precode
+    ## PostgreSQL
+    BEGIN;
+    LOCK TABLE table_stock IN ACCESS EXCLUSIVE MODE;
+    UPDATE table_reserve SET num_of_reserve = num_of_reserve + 1 where item_id = 10 and date = '2020-01-01';
+    UPDATE table_stock SET num_of_stock = num_of_stock - 1 where item_id = 10 and date = '2020-01-01';
+    COMMIT;
+precode==
+
+PostgreSQLでは「トランザクションを開始」->「排他ロック（ACCESS EXCLUSIVE）獲得」->「アトミックかつ不可視にしたい処理」->「トランザクションをコミット」->「ロックを自動的に開放」という流れになる。
+また、ロックモードの指定は「ロックを獲得する対象テーブル（レコード）の状態をどのように変更するか」という観点での名前になっている。
+
+それに対してMySQLでは、「autocommitを0に設定」->「排他ロックを獲得」->「暗黙的にトランザクションが開始される」->「アトミックかつ不可視にしたい処理」->「トランザクションを明示的にコミット」->「明示的にロックを開放」という流れ。
+ロックモードの指定はREADとWRITEがあり、これは「ロックを獲得しようとしているセッションがこれから実行する処理は、読み込みだけなのか、それとも書き込みが含まれるのか」という観点での名前になっている。
+
+複数テーブルに及ぶ更新系処理では、それら全てのテーブルに対して排他ロックを「一文で」獲得する必要がある。複数ステートメントでロックを獲得しようとしても、その前のロックは勝手にアンロックされる（というか、ロック獲得と同時に暗黙のトランザクションが開始される）。
+
+そのほかにもいろいろある。
+
+古いけど参考になるサイト:  ==link https://kannokanno.hatenablog.com/entry/20120704/1341419338 link==
+
+ 
+
+
+公式 : ==link https://dev.mysql.com/doc/refman/5.6/ja/internal-locking.html link==
+
+ 
+
+・・・と、PostgreSQL使いからするとかなり神経を使う激ヤバ仕様。
