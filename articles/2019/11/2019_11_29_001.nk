@@ -1,0 +1,85 @@
+==TITLE_START==
+FuelPHPのDeployerによるデプロイ
+==TITLE_END==
+
+==SUMMARY_START==
+Deployerによるレシピについて。
+==SUMMARY_END==
+
+==TAG_START==
+Deployer deployer PHP php FuelPHP fuelphp デプロイツール
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 FuelPHPのDeployerによるデプロイ
+
+以前お話したPHPのデプロイについて、Deployerというツールを使ってDSLを書いてみたところいい感じだった。
+会社のプロダクトではFuelPHPというWAFを使っているが、レシピはcommonなもので十分だった。
+
+まずはDeployer公式サイト : <https://deployer.org/>
+
+インストールは公式に書いてある通りでOK。
+
+==precode
+    curl -LO https://deployer.org/deployer.phar
+    mv deployer.phar /usr/local/bin/dep
+    chmod +x /usr/local/bin/dep
+precode==
+
+前提条件としては、デプロイスクリプトを実行するマシンは、
+アプリサーバーに公開鍵認証でsshログインできることと、
+sudoコマンドでパスワードを聞かれないこと、
+apacheの設定でユーザーディレクトリの設定を済ませていることぐらい（必要なコマンドだけnopassにしてください）。
+
+デプロイ対象サーバーの設定として、以下のような形式で設定を書き込む。
+
+==precode
+    set('application', 'app'); # アプリサーバーのアプリ展開path等に使う。
+
+    host('999.999.000.999')       # リモートホストの指定。複数指定も可能（当たり前か）
+        ->stage('production')
+        ->user('app_user')        # リモートホストのユーザー名。
+        ->set('branch','master')  # pullしてデプロイする対象のブランチ
+        ->set('deploy_path', '~/{{application}}');  # デプロイ対象path
+
+
+    ## /home/app_user/app/以下のデプロイされたディレクトリにwww-dataへのアクセス権を与えるためのタスクを定義
+    desc('chown deployment dir');
+    task('deploy:chown_dir', function () {
+        $target_dir = '~/{{application}}/current';
+        $res1 = run("sudo chown -h app_user:www-data $target_dir");
+        $res2 = run("sudo chown -hR app_user:www-data $target_dir/");
+        $res3 = run("sudo chown -R app_user:www-data $target_dir/");
+    });
+
+    desc('My Application Deployment');
+    task('deploy', [
+        'deploy:info',
+        'deploy:prepare',
+        'deploy:lock',
+        'deploy:release',
+        'deploy:update_code',
+        'deploy:shared',
+        'deploy:writable',
+        'deploy:vendors',
+        'deploy:clear_paths',
+        'deploy:symlink',
+        'deploy:chown_dir',    # これが追加されたタスク
+        'deploy:unlock',
+        'cleanup',
+        'success'
+    ]);
+precode==
+
+アプリケーションはリモートの/home/app_user/appに展開され、/home/app_user/app/currentのシンボリックリンクが指し示すディレクトリが最新のものになる。
+
+デプロイスクリプトが置かれたディレクトリで以下のコマンドを実行すれば、アプリが展開される（うまい具合にcomposer updateなどもちゃんと実行される）
+
+==precode
+    $ dep deploy production
+precode==
+

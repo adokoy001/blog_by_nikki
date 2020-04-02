@@ -1,0 +1,68 @@
+==TITLE_START==
+FuelPHPのクエリビルダチートシート
+==TITLE_END==
+
+==SUMMARY_START==
+FuelPHPのクエリビルダ忘れがちなので、自分用チートシートとして。
+==SUMMARY_END==
+
+==TAG_START==
+php PHP fuelphp FuelPHP クエリビルダ select系
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 FuelPHPのクエリビルダチートシート
+
+FuelPHPのquery builderのselect系についてのみ、実用的な例を示しておく。
+insert,update,delete系はORMを使ったほうが効果的な場合もあるだろうが、
+FuelPHPのModel自動生成機能はリレーションをまともに読んでくれない（リレーションを手作業で張る必要あり・・・）ので、
+DBの仕様を頻繁に変えるような開発初期段階ではかなり大変で、Modelの更新も慎重にやらなきゃなので、アンチパターンに入りがちかもしれない。
+PerlのDBIx::Classとスキーマローダーに慣れている身としては結構厳しい。
+
+（ということで、私としてはFuelPHP標準搭載のQuery Builderがコスパ的にかなり良いと思っています。）
+
+==precode
+    DB::query("LOCK TABLES table_01 WRITE, table_02 WRITE, table_03 WRITE, table_log WRITE, table_transaction WRITE");
+    DB::start_transaction();
+    $result = DB::select_array([
+        ['table_01.field_01','field_alias_name01'],
+        ['table_02.field_02','field_alias_name02'],
+        ['table_03.field_03','field_alias_name03'],
+      ])
+      ->from('table_01')
+      ->join('table_02','inner')
+      ->on('table_01.primary_key_01','=','table_02.foreign_key_02')
+      ->join('table_03','left outer')
+      ->on('table_01.primary_key_01','=','table_03.foreign_key_03')
+      ->where('table_01.field_04','=',$condition01)
+      ->and_where_open()
+      ->where('table_02.field_05','=',$condition02)
+      ->or_where('table_02.field_06','=',$condition03)
+      ->and_where_close()
+      ->and_where('table_03.field_07','in',[$item01,$item02,$item03])
+      ->order_by('field_alias_name01','desc')
+      ->order_by('field_alias_name02','asc')
+      ->limit($record_limitation)
+      ->offset($offset_value)
+      ->execute()
+      ->as_array();
+    if(count($result) === 0){
+      DB::insert('table_log')
+        ->set(['field_01' => 'Empty', 'field_02' => $user_name])
+        ->execute();
+    }else{
+      foreach($result as $result_item){
+        DB::insert('table_transaction')
+          ->set(['field_01' => $result_item['field_alias_name02']])
+          ->execute();
+      }
+    }
+    DB::commit_transaction();
+    DB::query("UNLOCK TABLES");
+precode==
+
+この例は「かなり強いLOCKを割と長い時間維持する」書き方なので、マネをするとしたら非機能要件に合っているかどうかを吟味してください。

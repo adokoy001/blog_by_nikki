@@ -1,0 +1,88 @@
+==TITLE_START==
+Mojo::UserAgentを使ってアクティブチェック（外部監視）
+==TITLE_END==
+
+==SUMMARY_START==
+
+==SUMMARY_END==
+
+==TAG_START==
+Perl perl Mojolicious Mojo UserAgent プログラミング
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 Mojo::UserAgentを使ってアクティブチェック（外部監視）
+
+
+表題の通り、cron等で適当にアクティブチェックのプログラムを書き捨てるならMojo::UserAgentが便利ですよというお話。
+
+MojoliciousはPerl標準モジュール以外に依存していないので、サクッとインストールして実行環境を用意することができる（まあディストロのパッケージマネージャでインストールすればたいていのものはストレスなくインストールできますが）
+
+==h2 サンプルコード
+
+==precode
+
+以下コードは監視対象HTTPサーバへアクセスした後、ステータスコードが200,301以外を返された場合にSlackへ通知する例。
+
+    use strict;
+    use warnings;
+    use utf8;
+    use Encode;
+    use Mojo::UserAgent;
+
+    ### Slackで通知する場合のapi url
+    my $slack = 'https://your.slack.channel.example.com/services/A/B/C';
+    ### 監視対象の設定
+    my $external = [
+       {name => 'my site 1', url => 'https://your.site1.example.com/'},
+       {name => 'my site 2', url => 'https://your.site2.example.com/'},
+    ];
+
+    ### 実行
+    my $ext_ua = Mojo::UserAgent->new;
+    for(0 .. $#$external){
+        my $instance = $external->[$_];
+        my $con_error = '';
+        my $code = 1000;
+        eval{
+            $code = $ext_ua->get($instance->{url})->result->code;
+        };
+        if($@){
+            $con_error = $@;
+        }
+        if($code != 200 and $code != 301){
+             my $message = $instance->{name} . ' : ' . $code . ' : ' . "$con_error\n";
+             my $tmp_res = $ext_ua->post(
+                 $slack
+                 =>
+                 { 'Content-type' => 'application/json' }
+                 =>  json => { text => $message }
+                 )->result;
+        }
+    }
+
+precode==
+
+==h2 障害の発生と継続
+
+例えばこのコードを10分間隔で実行した場合、監視対象の障害が継続していれば10分間隔でSlack通知が来てしまう。
+
+「新たに発生した時だけ通知」という動作にしたい場合は、例えば、
+SQLiteをDBにして障害の発生したURLと日時（エポックタイム）を記録するようにして、
+==code 最後に検知してからの経過秒数 + α > 監視間隔 code== を満たした場合だけSlack通知するように書けば良い。
+
+SQLiteの簡単なCRUD操作を提供してくれるMojo::SQLiteというラッパーモジュールがあるので使うとよい。
+
+ 
+
+Mojo::SQLite : ==a リンク ==href https://metacpan.org/pod/Mojo::SQLite a==
+
+ 
+
+が、こちらはMojoliciousと違って依存モジュール満載なので、それが嫌であればストイックにファイル操作でurlとエポック時間を保存するだけの適当なcsvやjsonをストレージにすればよい（と思います）
+
+

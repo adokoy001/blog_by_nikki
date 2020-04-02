@@ -1,0 +1,72 @@
+==TITLE_START==
+PHPのarrayから再帰的にkeyとvalueを全て取り出す
+==TITLE_END==
+
+==SUMMARY_START==
+再帰呼び出しを使って複雑なデータ構造を全て走査
+==SUMMARY_END==
+
+==TAG_START==
+PHP php プログラミング　再帰的呼び出し 複雑なデータ構造
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 PHPのarrayから再帰的にkeyとvalueを全て取り出す
+
+
+PHP歴がそろそろ半年になろうとしているので、私的なエチュードであるところの「ある言語で複雑なデータ構造を再帰的に全てスキャンするプログラム」を書いてみた。
+
+動作は表題の通りです。
+
+==precode
+    <?php
+    # 複雑なデータ構造
+    $external = ['abc','abcd','abcde','xyz'];
+    $input = [
+               'A1' => [
+                        'AA1' => [
+                                  'AAA1' => 'aaaa1',
+                                  'AAA2' => ['aaaa2','aaaa2a','aaaa2aa','aaaa2aaa']
+                                  ],
+                        ],
+               'B1' => [
+                        'BB1' => 'bb1',
+                        'BB2' => [
+                                  'BBB1' => [
+                                             'BBBB1' => 'bbbb1',
+                                             'BBBB2' => 'bbbb2',
+                                             ],
+                                  ],
+                        'BB3' => 'bb3'
+                        ],
+               'C1' => &$external
+               ];
+
+    # 再帰的key_value抽出関数
+    function extract_key_value_rec($var,&$keys,&$values){
+      if(!is_scalar($var)){
+        foreach($var as $key => $value){
+          if(array_values($var) !== $var){
+            $keys[$key] = true;
+          }
+          extract_key_value_rec($value,$keys,$values);
+        }
+      }else{
+        $values[$var] = true;
+      }
+    }
+
+    # 実行
+    extract_key_value_rec($input,$keys_1,$values_1);
+    print_r($keys_1);
+    print_r($values_1);
+    ?>
+precode==
+
+is_scalarでスカラーかどうかの型判定をして再帰呼び出しを続けるかどうかを分岐、``` array_values($var) !== $var ``` の部分で連想配列か配列かを判定している。
+
+
