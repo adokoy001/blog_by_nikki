@@ -3,7 +3,20 @@ use strict;
 use warnings;
 use utf8;
 use Exporter 'import';
-our @EXPORT = qw/entry_filter archive_generator tag_index_generator/;
+our @EXPORT = qw/entry_filter archive_generator tag_index_generator related_content/;
+
+sub escape_html {
+    my $input = shift;
+    if(defined($input) and $input ne ""){
+	$input =~ s/&/&amp;/msg;
+	$input =~ s/</&lt;/msg;
+	$input =~ s/>/&gt;/msg;
+    $input =~ s/"/&quot;/msg;
+	return $input;
+    }else{
+	return "";
+    }
+}
 
 sub entry_filter(){
   my $input = shift;
@@ -53,6 +66,19 @@ sub tag_index_generator(){
   }
   $body_tag_index .= "</ul>\n";
   return $body_tag_index;
+}
+
+sub related_content(){
+    my $tag_related = shift;
+    my $related_list = "<ul>\n";
+    foreach my $entry (@$tag_related){
+	my ($date) = (split("/",$entry->{path}))[4];
+	my ($yyyy,$mm,$dd) = (split("_",$date))[0,1,2];
+	$related_list .= "<li> $yyyy-$mm-$dd : <a href=\"" . $entry->{path} . "\">"
+	    . &escape_html($entry->{title}) . "</a></li>\n";
+    }
+    $related_list .= "</ul>\n";
+    return $related_list;
 }
 
 1;
