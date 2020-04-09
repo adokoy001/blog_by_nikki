@@ -1,0 +1,78 @@
+==TITLE_START==
+nikki.pl あともう少し頑張ってみる
+==TITLE_END==
+
+==OG_IMAGE 
+==OG_LOCALE 
+
+==SUMMARY_START==
+nikki.plのアップデート近況報告と今後の予定
+==SUMMARY_END==
+
+==TAG_START==
+Perl perl nikki.pl
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 nikki.pl あともう少し頑張ってみる
+
+このブログを生成している静的サイトジェネレータですが、直近で以下の機能を追加しました。
+
+==ul
+==li Twitter card, Open Graphの自動生成機能を強化
+==li DL,DT,DDタグの追加
+==li 番号付きリストの追加
+==li ユーザー定義関数（Archiveやtagのリスト表示をカスタマイズできる）
+ul==
+
+
+そろそろテーブルあたりも対応したいのですが、構文解析が複雑になりそうでちょっと厄介な感じ。
+
+==h2 今後の予定
+
+まずはユーザー定義関数を充実させて、その後にHTML直書き構文（コンパイルをエスケープする）を追加してゆく感じで。
+
+==oln
+==li What's newの表示をカスタマイズする機能（ユーザー定義関数）
+==li 特定タグを含む記事一覧の表示をカスタマイズする機能（ユーザー定義関数）
+==li HTML直書き構文の追加
+==li 編集履歴を書き換える機能
+==li パラグラフタグの微妙な振る舞いを改善（バグっぽい挙動がある）
+oln==
+
+現時点でも十分実用的だと思うので、よろしければ使ってみてください！（宣伝）
+
+ 
+
+==a nikki.pl - Github.com ==href https://github.com/adokoy001/nikki a==
+
+ 
+
+ブログツールとして使い始めるために実行するコマンドは以下の通りです。
+
+==precode
+$ mkdir my_diary
+$ cd my_diary
+$ wget https://raw.githubusercontent.com/adokoy001/nikki/master/nikki.pl
+$ perl nikki.pl init
+$ perl nikki.pl new
+
+ ... お使いのエディタで記事のひな形を編集 ...
+
+$ perl nikki.pl gen
+precode==
+
+==code init code== でブログの初期化処理、==code new code== で新しい記事のひな形を作成、 ==code gen code== で静的サイトをpublic以下のディレクトリに展開します。
+
+
+あとはApacheやnginx等を使ってファイルを静的配信すれば完了です。
+
+
+ぜひ。
+
+
+
