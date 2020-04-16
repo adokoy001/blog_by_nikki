@@ -51,5 +51,8 @@ literal==
 
 こんな感じ。
 
+&#61;&#61;literal と literal&#61;&#61; で囲んだ領域が直書きになります。
+
+==a この記事のソース ==href https://github.com/adokoy001/blog_by_nikki/blob/master/articles/2020/04/2020_04_16_001.nk a== を参考にしてみてくださいませ。
 
 ではでは。
