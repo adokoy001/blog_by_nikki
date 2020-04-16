@@ -81,4 +81,12 @@ sub related_content(){
     return $related_list;
 }
 
+sub whats_new(){
+    return 1;
+}
+
+sub related_tags(){
+    return 1;
+}
+
 1;

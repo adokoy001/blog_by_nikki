@@ -1,0 +1,55 @@
+==TITLE_START==
+nikki.plに新機能を追加しました。
+==TITLE_END==
+
+==OG_IMAGE 
+==OG_LOCALE 
+
+==SUMMARY_START==
+nikki.plにカスタマイズ機能とHTML直書き機能を追加
+==SUMMARY_END==
+
+==TAG_START==
+nikki.pl perl Perl プログラミング
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 nikki.plに新機能を追加しました。
+
+
+==a 以前 ==href /entry/2020/04/2020_04_07_001.html a==予告した1～3までの機能を完成させました。
+
+HTML直書き構文まで作ったので、理論上なんでもできる感じになりました。表（table）を作る時に便利だと思います。
+
+
+==literal
+
+<table class="table table-dark">
+<tr>
+  <th>項目1</th>
+  <th>項目2</th>
+  <th>項目3</th>
+</tr>
+<tr>
+  <td>値11</td>
+  <td>値12</td>
+  <td>値13</td>
+</tr>
+<tr>
+  <td>値21</td>
+  <td>値22</td>
+  <td>値23</td>
+</tr>
+</table>
+
+literal==
+
+
+こんな感じ。
+
+
+ではでは。
