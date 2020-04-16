@@ -82,11 +82,38 @@ sub related_content(){
 }
 
 sub whats_new(){
-    return 1;
+    my $archive = shift;
+    my $config = shift;
+    my $updates = "";
+    my $counter = 0;
+    foreach my $entry (@$archive){
+	$counter++;
+	if($counter > $config->{whats_new}){
+	    last;
+	}else{
+	    $updates .= '<div class="card"><h3 class="card-header"><a href="'.$entry->{www_path}
+	    .'">'.$entry->{title}
+	    .'</a>'
+	    .'</h3><div class="card-body">'
+		.&escape_html($entry->{summary})
+	    .'</div><div class="card-footer"> CREATED AT: '
+		.$entry->{created_at}
+	    .'</div></div>';
+	}
+    }
+    return $updates;
 }
 
 sub related_tags(){
-    return 1;
+    my $tmp_tags = shift;
+    my $tag_info = shift;
+    my $tmp_tag_html = '';
+    $tmp_tag_html .= "<ul>\n";
+    foreach my $tmp_tag (@$tmp_tags){
+	$tmp_tag_html .= "<li> <a href=\"".$tag_info->{$tmp_tag}->{path}."\">".&escape_html($tmp_tag)."</a></li>\n";
+    }
+    $tmp_tag_html .= "</ul>\n";
+    return $tmp_tag_html;
 }
 
 1;
