@@ -1,0 +1,33 @@
+==TITLE_START==
+Rustの難しいところに入った
+==TITLE_END==
+
+==OG_IMAGE 
+==OG_LOCALE 
+
+==SUMMARY_START==
+RustのOwnershipでちょっと難しくなってきた。
+==SUMMARY_END==
+
+==TAG_START==
+Rust プログラミング
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 Rustの難しいところに入った
+
+最終目標はActix-webで何か実用的なウェブアプリを作ることなのだが、Rustのユニークなところでちょっとわけが分からなくなってきた。
+
+==a Rustの日本語ドキュメント ==href https://doc.rust-jp.rs/ a== に沿って進めている。
+
+値のバインディング（束縛）が原則イミュータブルで、ミュータブルなバインディング（普通の言語の変数に近い）で発生し得る一貫性の崩壊をオーナーシップ（所有権）で解決するような感じかな。
+
+「エラーが出るはずのサンプルコード」でエラーが出なかったりするのは、このドキュメントが古いバージョンだからなのだろうか。
+
+ボトムアップ式にやっていく前に ==a 食事する哲学者 ==href https://doc.rust-jp.rs/the-rust-programming-language-ja/1.6/book/dining-philosophers.html a== を先に終わらせてしまっていたので、なんとなく理解はできるかも。
+
+マイペースでやっていきます。
