@@ -1,0 +1,43 @@
+==TITLE_START==
+自前ラップトップの環境構築で夜更かししてしまった
+==TITLE_END==
+
+==OG_IMAGE 
+==OG_LOCALE 
+
+==SUMMARY_START==
+Ubuntu 20.04 LTSを自前ラップトップのVirtual Box環境に構築。今まで使っていた18.04のVMから設定や開発環境などを移行していく予定・・・。
+==SUMMARY_END==
+
+==TAG_START==
+foo bar baz anything
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 自前ラップトップの環境構築で夜更かししてしまった
+
+Ubuntu 20.04 LTSが出てからかなり遅れてVMにインストール。
+
+相変わらずいい感じ。いつも通りデスクトップ版を使うことにする。
+
+Virtual Boxでインストール＆初期設定＆apt update ＆ apt upgrade。
+
+ネットワークはプライマリインターフェイスにデフォルトのNAT、セカンダリにホストオンリーアダプタを割り当て。
+
+GUIの画面からホストオンリーアダプタのIP設定をスタティックに設定。で、Guest Additionもインストールしておく。で、再起動。
+
+ホストからsshでアクセスできるように、まずはsshをインストール。sshdではなくsshでsshdがインストールされる（ややこしい）
+
+build-essential, git, curl, zshをインストールして最低限の人権を確保。今まで使っていたUbuntu 18.04から.zshrcを移植。ついでにemacsの設定ファイルも持ってくる。
+
+その後plenv, rbenv, pyenv, rustコンパイル環境を準備。
+
+emacsをインストール。list-packagesで必要なパッケージをインストール。既に設定ファイルは持ってきているので正常に動く。
+
+・・・
+
+という感じで昨日は夜更かししてしまった。
