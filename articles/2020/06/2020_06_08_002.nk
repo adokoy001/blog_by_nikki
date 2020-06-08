@@ -1,0 +1,33 @@
+==TITLE_START==
+nikki.plの機能追加予定
+==TITLE_END==
+
+==OG_IMAGE 
+==OG_LOCALE 
+
+==SUMMARY_START==
+そういえば下書き機能が無かったので、近々追加する予定。
+==SUMMARY_END==
+
+==TAG_START==
+nikki.pl perl プログラミング
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 nikki.plの機能追加予定
+
+下書き機能を新たに追加する予定。
+
+==code perl nikki.pl dnew code== で作成できるようにする。
+
+作成したドラフトはarticles/draft/以下に作成される感じで。
+
+
+ドラフト状態と公開状態の切り替えはmvコマンドでやって頂く感じで。年・月のディレクトリを切るのが面倒かもしれない。
+
+
+
