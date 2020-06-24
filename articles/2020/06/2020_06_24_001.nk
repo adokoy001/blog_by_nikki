@@ -1,0 +1,32 @@
+==TITLE_START==
+言葉狩りとか
+==TITLE_END==
+
+==OG_IMAGE 
+==OG_LOCALE 
+
+==SUMMARY_START==
+アメリカの黒人容疑者死亡事件に端を発する一連の運動について
+==SUMMARY_END==
+
+==TAG_START==
+日常 ポリコレ
+==TAG_END==
+
+==HEAD_START==
+==HEAD_END==
+
+==BODY_BELOW==
+
+==h1 言葉狩りとか
+
+アメリカのBlack Lives Matter運動から繋がっているようだが、言葉狩りの侵攻がITにも。
+
+master/slaveモデルはまあわかる。主人と奴隷だから。
+
+gitのmasterブランチはbitkeeperからの借用語になっており、bitkeeperでのmasterブランチはmaster/slaveの関係があるようだ。
+
+だが、masterブランチをリネームすることは、システムやドキュメントからのあらゆる参照を破壊してしまう行為だろう。
+
+主な理由は「傷つく人がいるかもしれないから」だと思われる。
+
